@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//TODO: Step 2 - Import the rFlutter_Alert package here.
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'quiz_brain.dart';
 
 QuizBrain quizBrain = QuizBrain();
@@ -10,6 +10,7 @@ class Quizzler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Colors.grey.shade900,
         body: SafeArea(
@@ -30,8 +31,26 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   List<Icon> scoreKeeper = [];
+  _onBasicAlertPressed(context) {
+    Alert(
+      context: context,
+      type: AlertType.success,
+      title: "Great Job!",
+      desc: "Hoorah! You completed the quiz?",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Restart",
+            style: TextStyle(color: Colors.white70, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          width: 120,
+        )
+      ],
+    ).show();
+  }
 
-  void checkAnswer(bool userPickedAnswer) {
+  void checkAnswer(bool userPickedAnswer, BuildContext context) {
     bool correctAnswer = quizBrain.getCorrectAnswer();
 
     setState(() {
@@ -42,18 +61,26 @@ class _QuizPageState extends State<QuizPage> {
       //TODO: Step 4 Part D - empty out the scoreKeeper.
 
       //TODO: Step 5 - If we've not reached the end, ELSE do the answer checking steps below 👇
-      if (userPickedAnswer == correctAnswer) {
-        scoreKeeper.add(Icon(
-          Icons.check,
-          color: Colors.green,
-        ));
+
+      if (quizBrain.isFinished()) {
+        _onBasicAlertPressed(context);
+        scoreKeeper.clear();
+        quizBrain.reset();
+
       } else {
-        scoreKeeper.add(Icon(
-          Icons.close,
-          color: Colors.red,
-        ));
+        if (userPickedAnswer == correctAnswer) {
+          scoreKeeper.add(Icon(
+            Icons.check,
+            color: Colors.green,
+          ));
+        } else {
+          scoreKeeper.add(Icon(
+            Icons.close,
+            color: Colors.red,
+          ));
+        }
+        quizBrain.nextQuestion();
       }
-      quizBrain.nextQuestion();
     });
   }
 
@@ -94,7 +121,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked true.
-                checkAnswer(true);
+                checkAnswer(true, context);
               },
             ),
           ),
@@ -113,7 +140,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked false.
-                checkAnswer(false);
+                checkAnswer(false, context);
               },
             ),
           ),
